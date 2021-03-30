@@ -5,7 +5,7 @@
       >添加</el-button
     >
     <!-- 表单 -->
-    <el-table border :data="trademarkList" style="width: 100%">
+    <el-table border :data="trademarkList" style="width: 100%; margin:20px 0">
       <el-table-column
         align="center"
         prop="prop"
@@ -137,6 +137,7 @@ export default {
     // 修改每页显示条数
     handleSizeChange(size) {
       this.limit = size;
+      this.getTrademarkList()
     },
     // 点击显示添加品牌
     showAddTemplate() {

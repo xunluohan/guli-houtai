@@ -181,8 +181,8 @@ $light_gray:#eee;
   min-height: 100%;
   width: 100%;
   background-image: url("~@/assets/bj.jpg");
+  background-size: cover;
   background-color: $bg;
-  background-size: order;
   overflow: hidden;
 
   .login-form {

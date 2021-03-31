@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-form :inline="true" :model="categoryId">
+    <el-form :inline="true" :model="categoryId" :disabled="!isShowDiv">
       <el-form-item label="一级分类">
         <el-select
           v-model="categoryId.category1Id"
@@ -50,6 +50,7 @@
 <script>
 export default {
   name: "CategorySelector",
+  props:['isShowDiv'],
   data() {
     return {
       category1List: [],

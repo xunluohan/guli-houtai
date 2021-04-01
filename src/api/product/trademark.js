@@ -23,5 +23,11 @@ export default {
   // GET /admin/product/baseTrademark/{page}/{limit}
   getTrademarkList(page,limit){
     return request.get(`/admin/product/baseTrademark/${page}/${limit}`)
+  },
+
+  // 获取所有品牌列表
+  // GET /admin/product/baseTrademark/getTrademarkList
+  getAllTrademarkList(){
+    return request.get('/admin/product/baseTrademark/getTrademarkList')
   }
 }

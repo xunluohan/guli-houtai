@@ -59,6 +59,7 @@
                 icon="el-icon-delete"
                 size="mini"
                 title="删除spu"
+                @click="deleteSpu(row)"
               ></HintButton>
             </template>
           </el-table-column>
@@ -78,7 +79,7 @@
       </div>
 
       <!-- SPU -->
-      <SpuForm v-show="isShowSpuForm"></SpuForm>
+      <SpuForm @cancleBack="cancleBack" @backSuccess="backSuccess" v-show="isShowSpuForm" :visible.sync="isShowSpuForm" ref="spu" ></SpuForm>
 
       <!-- SKU -->
       <SkuForm v-show="isShowSkuForm"></SkuForm>
@@ -145,18 +146,49 @@ export default {
       this.limit = size;
       this.getSpuList();
     },
-    // 点击 添加SPU 按钮
-    showAddSpuForm() {
-      this.isShowSpuForm = true;
-    },
-    // 点击 修改SPU 按钮
-    showUpdateSpuForm(row) {
-      this.isShowSpuForm = true;
-    },
     // 点击 添加SKU 按钮
     showAddSkuForm(row) {
       this.isShowSkuForm = true;
     },
+    // 点击 添加SPU 按钮
+    showAddSpuForm() {
+      this.isShowSpuForm = true;
+      this.$refs.spu.getAddSpuInfo(this.category3Id)
+    },
+    // 点击 修改SPU 按钮
+    showUpdateSpuForm(row) {
+      this.flag = row.id
+      this.isShowSpuForm = true;
+      this.$refs.spu.getChangeSpuInfo(row,this.category3Id)
+    },
+
+    // 通知父组件 保存成功回来了
+    backSuccess(){
+      // 是添加回来的,还是修改回来的
+      if(this.flag){
+        // 修改回来的
+        this.getSpuList(this.page)
+      }else{
+        console.log(1)
+        // 添加回来的
+        this.getSpuList()
+      }
+      // 清除标志
+      this.flag = null
+    },
+
+
+    // 通知父组件 点击取消回来了
+    cancleBack(){
+      this.flag = null
+    },
+
+    // 点击删除按钮 删除 SPU
+    async deleteSpu(row){
+      await this.$API.spu.remove(row.id)
+      this.getSpuList(this.spuList.length > 1 ? this.page : this.page - 1)
+    }
+    
   },
 };
 </script>

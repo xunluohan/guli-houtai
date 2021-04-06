@@ -1,8 +1,8 @@
 <template>
   <div>
-    <el-form :model="spuInfo">
+    <el-form :model="spuInfo" :rules="rules">
       <!-- SPU名称 -->
-      <el-form-item label="SPU名称" label-width="100px">
+      <el-form-item label="SPU名称" label-width="100px" prop="spuName">
         <el-input v-model="spuInfo.spuName" placeholder="请输入"></el-input>
       </el-form-item>
 
@@ -89,7 +89,7 @@
                 v-for="(spuSaleAttrValue, index) in row.spuSaleAttrValueList"
                 closable
                 :disable-transitions="false"
-                @close="row.spuSaleAttrValueList.splice(index,1)"
+                @close="row.spuSaleAttrValueList.splice(index, 1)"
               >
                 {{ spuSaleAttrValue.saleAttrValueName }}
               </el-tag>
@@ -106,7 +106,11 @@
               </el-input>
               <!-- 添加按钮 -->
               <!-- v-else -->
-              <el-button v-else class="button-new-tag" size="small" @click="addSaleAttrValue(row)"
+              <el-button
+                v-else
+                class="button-new-tag"
+                size="small"
+                @click="addSaleAttrValue(row)"
                 >+ 添加</el-button
               >
             </template>
@@ -118,7 +122,7 @@
                 icon="el-icon-delete"
                 size="mini"
                 title="删除"
-                @click="spuInfo.spuSaleAttrList.splice($index,1)"
+                @click="spuInfo.spuSaleAttrList.splice($index, 1)"
               ></HintButton>
             </template>
           </el-table-column>
@@ -143,18 +147,25 @@ export default {
       // 照片墙
       dialogImageUrl: "",
       dialogVisible: false,
-      chanckedSaleAttrIdName: "", 
-      category3Id:'',
+      chanckedSaleAttrIdName: "",
+      category3Id: "",
       spuInfo: {
-        category3Id:'',
+        category3Id: "",
         spuName: "",
-        tmId: '',
+        tmId: "",
         description: "",
         spuSaleAttrList: [],
       },
       trademarkList: [],
       spuImageList: [],
       saleAttrList: [],
+
+      rules: {
+        spuName: [
+          { required: true, message: "请输入SPU名称", trigger: "blur" },
+          { min: 2, max: 15, message: "长度在 2 到 15 个字符", trigger: "change" },
+        ]
+      },
     };
   },
   methods: {
@@ -176,7 +187,7 @@ export default {
 
     // 点击 添加 发送两个请求
     async getAddSpuInfo(category3Id) {
-      this.category3Id = category3Id
+      this.category3Id = category3Id;
       // 获取所有品牌列表 getAllTrademarkList
       const tmResult = await this.$API.trademark.getAllTrademarkList();
       if (tmResult.code === 20000 || tmResult.code === 200) {
@@ -190,8 +201,8 @@ export default {
       }
     },
     // 点击 修改 发送4个请求
-    async getChangeSpuInfo(spu,category3Id) {
-      this.category3Id = category3Id
+    async getChangeSpuInfo(spu, category3Id) {
+      this.category3Id = category3Id;
       // 根据 id 获取SPU详情 get
       const result = await this.$API.spu.get(spu.id);
       if (result.code === 20000 || result.code === 200) {
@@ -242,105 +253,104 @@ export default {
       this.chanckedSaleAttrIdName = "";
     },
     // 点击 添加属性值 按钮, 切换为input
-    addSaleAttrValue(row){
-      this.$set(row,'inputVisible',true)
-      this.$set(row,'saleAttrValueName','')
+    addSaleAttrValue(row) {
+      this.$set(row, "inputVisible", true);
+      this.$set(row, "saleAttrValueName", "");
       // 自动获取焦点
-      this.$nextTick(()=>{
-        this.$refs.saveTagInput.focus()
-      })
+      this.$nextTick(() => {
+        this.$refs.saveTagInput.focus();
+      });
     },
-    // 失去焦点 
-    handleInputConfirm(row){
-      let {baseSaleAttrId,saleAttrValueName} = row
+    // 失去焦点
+    handleInputConfirm(row) {
+      let { baseSaleAttrId, saleAttrValueName } = row;
 
-      if(saleAttrValueName.trim() === ''){
-        row.saleAttrValueName = ''
-        row.inputVisible = false
-        return
+      if (saleAttrValueName.trim() === "") {
+        row.saleAttrValueName = "";
+        row.inputVisible = false;
+        return;
       }
 
       // 不能有重复的属性值
-      let result = row.spuSaleAttrValueList.some(item => {
-        return item.saleAttrValueName === saleAttrValueName
-      })
+      let result = row.spuSaleAttrValueList.some((item) => {
+        return item.saleAttrValueName === saleAttrValueName;
+      });
 
-      if(result){
-        this.$message.error('不能有重复的属性值')
-        row.saleAttrValueName = ''
-        return
+      if (result) {
+        this.$message.error("不能有重复的属性值");
+        row.saleAttrValueName = "";
+        return;
       }
 
-      let obj ={
+      let obj = {
         baseSaleAttrId,
-        saleAttrValueName
-      }
+        saleAttrValueName,
+      };
 
-      row.spuSaleAttrValueList.push(obj)
+      row.spuSaleAttrValueList.push(obj);
 
-      row.saleAttrValueName = ''
+      row.saleAttrValueName = "";
 
       // 切换回 按钮
-      row.inputVisible = false
-
+      row.inputVisible = false;
     },
     // 点击按钮保存
-    save(){
+    save() {
       // 收集数据
-      let {spuInfo,spuImageList,category3Id} = this
+      let { spuInfo, spuImageList, category3Id } = this;
       // 整理数据
-      spuInfo.category3Id = category3Id
-      spuInfo.spuImageList = spuImageList.map(item => {
+      spuInfo.category3Id = category3Id;
+      spuInfo.spuImageList = spuImageList.map((item) => {
         return {
-          imgName:item.name,
-          imgUrl:item.imgUrl || item.response.data
-        }
-      })
-      spuInfo.spuSaleAttrList.forEach(item => {
-        delete item.inputVisible
-        delete item.saleAttrValueName
-      })
+          imgName: item.name,
+          imgUrl: item.imgUrl || item.response.data,
+        };
+      });
+      spuInfo.spuSaleAttrList.forEach((item) => {
+        delete item.inputVisible;
+        delete item.saleAttrValueName;
+      });
       // 发请求
       try {
         // 成功干啥
-        this.$API.spu.addUpdate(spuInfo)
-        this.$message.success('保存成功')
+        this.$API.spu.addUpdate(spuInfo);
+        this.$message.success("保存成功");
         // 回到列表页
-        this.$emit('update:visible', false)
+        this.$emit("update:visible", false);
 
         // 通知父组件回去了
-        this.$emit('backSuccess')
+        this.$emit("backSuccess");
         // 清空数据
-        this.resetData()
+        this.resetData();
       } catch (error) {
         // 失败干啥
-        this.$message.error(error.message)
+        this.$message.error(error.message);
       }
     },
     // 清空数据
-    resetData(){
-      this.dialogImageUrl= ""
-      this.dialogVisible= false
-      this.chanckedSaleAttrIdName= ""
-      this.category3Id=''
-      this.spuInfo= {
-        category3Id:'',
+    resetData() {
+      this.dialogImageUrl = "";
+      this.dialogVisible = false;
+      this.chanckedSaleAttrIdName = "";
+      this.category3Id = "";
+      this.spuInfo = {
+        category3Id: "",
         spuName: "",
-        tmId: '',
+        tmId: "",
         description: "",
-        spuSaleAttrList: []
-      }
-      this.trademarkList= []
-      this.spuImageList= []
-      this.saleAttrList= []
+        spuSaleAttrList: [],
+      };
+      this.trademarkList = [];
+      this.spuImageList = [];
+      this.saleAttrList = [];
     },
     // 点击取消按钮
-    cancle(){
-      this.$emit('update:visible', false)
-      this.$emit('cancleBack')
+    cancle() {
+      this.$emit("update:visible", false);
+      this.$emit("cancleBack");
       // 清空数据
-      this.resetData()
-    }
+      this.resetData();
+    },
   },
   computed: {
     // 计算未选中的属性

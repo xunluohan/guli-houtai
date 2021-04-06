@@ -247,6 +247,7 @@ export default {
     toLook(row) {
       // 新增的属性值不能为空,并且出去它本身,不能有重复的属性值
       if (!row.valueName.trim()) {
+        this.$message.error('输入不能为空')
         // 清空输入框
         row.valueName = "";
         // 退出函数,阻止程序继续向下执行
@@ -254,6 +255,10 @@ export default {
       }
 
       // 只要有一个项是符合条件的,就为true
+      // 因为这里的判断是除去自身的,第二次blur事件进来,判断还是会除去自身,
+      // 所以不用处理清空输入框
+      // 而spu中的判断是不用除去自身的,第一次回车触发blur,将用户输入的属性值,添加到数组当中,
+      // 第二次blur事件,又拿着刚才的属性值,去数组中判断有没有重复的,所以要清空输入框
       const result = this.attrFrom.attrValueList.some((item) => {
         if (item !== row) {
           return item.valueName === row.valueName;

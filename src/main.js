@@ -15,7 +15,8 @@ import router from './router'
 import '@/icons' // icon
 import '@/permission' // permission control
 
-import * as API from '@/api/product/index'
+import * as API from '@/api/index'
+import btnBP from '@/utils/button'
 
 // 全局注册
 import CategorySelector from '@/components/CategorySelector'
@@ -42,8 +43,9 @@ Vue.use(ElementUI, { locale })
 // Vue.use(ElementUI)
 
 Vue.config.productionTip = false
-
 Vue.prototype.$API = API
+Vue.prototype.$btnBP = btnBP
+
 new Vue({
   el: '#app',
   router,

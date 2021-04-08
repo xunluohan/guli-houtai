@@ -1,6 +1,7 @@
-import { login, logout, getInfo } from '@/api/user'
+import { login, logout, getInfo } from '@/api/acl/user'
 import { getToken, setToken, removeToken } from '@/utils/auth'
-import { resetRouter } from '@/router'
+import { default as router , resetRouter,constantRoutes,allAsyncRoutes,anyRoutes } from '@/router'
+import cloneDeep from 'lodash/cloneDeep'
 
 // const getDefaultState = () => {
 //   return {
@@ -10,10 +11,28 @@ import { resetRouter } from '@/router'
 //   }
 // }
 
+// 根据请求返回的数据,过滤出来需要动态创建的数组
+function AsyncRoutes(asyncRoutes,routeNames){
+  return asyncRoutes.filter(item => {
+    if(routeNames.indexOf(item.name) !== -1){
+      if(item.children && item.children.length){
+        item.children = AsyncRoutes(item.children,routeNames)
+      }
+      return true
+    }
+  })
+}
+
 const state = {
   token: getToken(),
   name: '',
-  avatar: ''
+  avatar: '',
+  buttons:[],
+  roles: [],
+  // 所有路由形成的数组
+  routes: [],
+  // 需要动态创建的路由形成的数组
+  asyncRoutes: []
 }
 
 const mutations = {
@@ -24,15 +43,34 @@ const mutations = {
     state.token = ''
     state.name = ''
     state.avatar = ''
+    state.buttons = []
+    state.roles = []
+    state.routes = []
+    state.asyncRoutes = []
   },
   SET_TOKEN: (state, token) => {
     state.token = token
   },
-  SET_NAME: (state, name) => {
-    state.name = name
+  // SET_NAME: (state, name) => {
+  //   state.name = name
+  // },
+  // SET_AVATAR: (state, avatar) => {
+  //   state.avatar = avatar
+  // }
+  SET_USERINFO(state,userInfo){
+    state.name = userInfo.name
+    state.avatar = userInfo.avatar
+
+    // 权限相关
+    state.buttons = userInfo.buttons
+    state.roles = userInfo.roles
   },
-  SET_AVATAR: (state, avatar) => {
-    state.avatar = avatar
+  SET_ROUTES(state,asyncRoutes){
+    state.asyncRoutes = asyncRoutes
+    state.routes = constantRoutes.concat(asyncRoutes,anyRoutes)
+    // 动态添加路由
+    router.addRoutes([...asyncRoutes,anyRoutes])
+    
   }
 }
 
@@ -62,10 +100,13 @@ const actions = {
           return reject('Verification failed, please Login again.')
         }
 
-        const { name, avatar } = data
+        // const { name, avatar } = data
+        // commit('SET_NAME', name)
+        // commit('SET_AVATAR', avatar)
 
-        commit('SET_NAME', name)
-        commit('SET_AVATAR', avatar)
+        commit('SET_USERINFO',data)
+        commit('SET_ROUTES',AsyncRoutes(cloneDeep(allAsyncRoutes),data.routes))
+
         resolve(data)
       }).catch(error => {
         reject(error)
